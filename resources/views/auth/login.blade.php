@@ -46,8 +46,13 @@
 
                 <div class="text-center mt-3">
                     @if (Route::has('password.request'))
-                        <a class="text-muted small text-decoration-none" href="{{ route('password.request') }}">Forgot your password?</a>
+                        <div class="mb-2">
+                            <a class="text-muted small text-decoration-none" href="{{ route('password.request') }}">Forgot your password?</a>
+                        </div>
                     @endif
+                    <div class="small text-muted">
+                        Don't have an account? <a href="{{ route('register') }}" class="text-decoration-none">Register</a>
+                    </div>
                 </div>
             </form>
         </div>

@@ -116,7 +116,11 @@
         <div class="card h-100 product-card border-0">
           <div class="position-relative overflow-hidden">
             <a href="{{ route('product.detail', $product->id) }}">
-                <img src="/images/{{ $product->image }}" class="card-img-top w-100" alt="{{ $product->name }}" style="height:250px; object-fit:cover;">
+                @if(filter_var($product->image, FILTER_VALIDATE_URL))
+                  <img src="{{ $product->image }}" class="card-img-top w-100" alt="{{ $product->name }}" style="height:250px; object-fit:cover;">
+                @else
+                  <img src="/images/{{ $product->image }}" class="card-img-top w-100" alt="{{ $product->name }}" style="height:250px; object-fit:cover;">
+                @endif
             </a>
             <div class="d-none position-absolute top-0 end-0 p-2">
                 <span class="badge bg-primary">New</span>

@@ -68,10 +68,11 @@ Route::get('/thankyou', function () {
 // --- Product Catalog & Search ---
 Route::get('/parts', [ProductController::class, 'frontend']);
 Route::get('/products/search', [ProductController::class, 'search'])->name('products.search');
+Route::get('/search-test', function() { return view('search_test'); });
 Route::get('/product/{id}', [ProductController::class, 'showDetail'])->name('product.detail');
 
 // --- Admin Protected Routes ---
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('products', ProductController::class);
     Route::resource('admin/services', App\Http\Controllers\ServiceController::class)->names('admin.services');
 });
@@ -79,14 +80,19 @@ Route::middleware('auth')->group(function () {
 // --- Dashboard ---
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified', 'admin'])->name('dashboard');
 
 // --- Profile Management ---
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // User Orders
+    Route::get('/my-orders', [App\Http\Controllers\OrderController::class, 'index'])->name('orders.index');
+    Route::get('/my-orders/{id}', [App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
 });
+
 
 require __DIR__.'/auth.php';
 

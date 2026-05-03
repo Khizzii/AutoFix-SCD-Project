@@ -20,6 +20,9 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
@@ -44,19 +47,22 @@
           <li class="nav-item"><a class="nav-link" href="{{ url('/parts') }}">Parts</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url('/contact') }}">Contact</a></li>
           
-          @if(Auth::check() && Auth::user()->usertype == 'admin')
+          @if(Auth::check() && (Auth::user()->usertype == 'admin' || Auth::user()->usertype == 'Admin'))
             <li class="nav-item"><a class="nav-link" href="{{ route('dashboard') }}">Admin</a></li>
           @endif
+
           
           <li class="nav-item"><a class="nav-link" href="{{ route('cart') }}">Cart</a></li>
           
            @auth
-               @if(Auth::user()->usertype == 'admin')
+               @if(Auth::user()->usertype == 'admin' || Auth::user()->usertype == 'Admin')
                    <li class="nav-item ms-lg-3">
                        <a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-sm me-2">Dashboard</a>
                    </li>
                @endif
-               <!-- DEBUG: Role is {{ Auth::user()->usertype }} -->
+               <li class="nav-item ms-2">
+                   <a href="{{ route('orders.index') }}" class="nav-link">My Orders</a>
+               </li>
                <li class="nav-item">
                    <form method="POST" action="{{ route('logout') }}" class="d-inline">
                        @csrf
@@ -64,7 +70,8 @@
                    </form>
                </li>
            @else
-               <li class="nav-item ms-lg-3"><a class="btn btn-primary btn-sm" href="{{ route('login') }}">ADMIN</a></li>
+               <li class="nav-item ms-lg-3"><a class="btn btn-primary btn-sm" href="{{ route('login') }}">LOGIN</a></li>
+                <li class="nav-item ms-2"><a class="btn btn-outline-light btn-sm" href="{{ route('register') }}">REGISTER</a></li>
            @endauth
 
         </ul>

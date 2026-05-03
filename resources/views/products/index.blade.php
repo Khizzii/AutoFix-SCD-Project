@@ -33,7 +33,7 @@
                       <select id="categoryFilter" class="form-select bg-dark border-secondary text-white">
                           <option value="">All Categories</option>
                           @foreach($categories as $cat)
-                            <option value="{{ $cat }}">{{ $cat }}</option>
+                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                           @endforeach
                       </select>
                   </div>
@@ -81,7 +81,7 @@
                         </td>
                         <td>
                             <span class="badge bg-secondary text-white border border-secondary">
-                                {{ $product->category ?? 'Uncategorized' }}
+                                {{ $product->category->name ?? $product->category ?? 'Uncategorized' }}
                             </span>
                         </td>
                         <td class="text-primary fw-bold">Rs {{ number_format($product->price) }}</td>
@@ -143,15 +143,17 @@
                 type: "GET",
                 data: { query: query, category: category },
                 success: function(response) {
+                    console.log("[Admin] Search Response:", response);
                     // 1. Update Dropdown
                     let dropdownHtml = '';
                     if(query.length > 0 && response.length > 0) {
                          response.forEach(product => {
-                            let imageUrl = product.image;
-                            if (!imageUrl.startsWith('http')) {
-                                imageUrl = '/images/' + imageUrl;
+                            let imageUrl = product.image ? product.image : 'placeholder.jpg';
+                            if (product.image && !product.image.startsWith('http')) {
+                                imageUrl = '/images/' + product.image;
+                            } else if (!product.image) {
+                                imageUrl = '/images/placeholder.jpg';
                             }
-                            // Link to Edit page for Admin convenience
                             dropdownHtml += `
                                 <a href="/products/${product.id}/edit" class="list-group-item list-group-item-action d-flex align-items-center gap-3 text-white" style="background: #0F1219; border-color: rgba(255,255,255,0.1);">
                                     <img src="${imageUrl}" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
@@ -171,13 +173,18 @@
                     let tableHtml = '';
                     if(response.length > 0) {
                         response.forEach(product => {
-                            let imageUrl = product.image;
-                            if (!imageUrl.startsWith('http')) {
-                                imageUrl = '/images/' + imageUrl;
+                            let imageUrl = product.image ? product.image : 'placeholder.jpg';
+                            if (product.image && !product.image.startsWith('http')) {
+                                imageUrl = '/images/' + product.image;
+                            } else if (!product.image) {
+                                imageUrl = '/images/placeholder.jpg';
                             }
                             
                             // Stock Badge Logic
                             let stockBadgeClass = product.stock > 10 ? 'bg-success' : (product.stock > 0 ? 'bg-warning text-dark' : 'bg-danger');
+
+                             // Handle Category Object vs String
+                            let catName = (typeof product.category === 'object' && product.category !== null) ? product.category.name : (product.category || 'Uncategorized');
 
                             tableHtml += `
                             <tr>
@@ -191,7 +198,7 @@
                                 </td>
                                 <td>
                                     <span class="badge bg-secondary text-white border border-secondary">
-                                        ${product.category || 'Uncategorized'}
+                                        ${catName}
                                     </span>
                                 </td>
                                 <td class="text-primary fw-bold">Rs ${new Intl.NumberFormat().format(product.price)}</td>
@@ -219,6 +226,10 @@
                         tableHtml = '<tr><td colspan="8" class="text-center text-muted py-5">No products found matching your criteria.</td></tr>';
                     }
                     $('#productsTableBody').html(tableHtml);
+                },
+                error: function(xhr, status, error) {
+                     console.error("[Admin] Search Error:", error);
+                     console.log(xhr.responseText);
                 }
             });
         }

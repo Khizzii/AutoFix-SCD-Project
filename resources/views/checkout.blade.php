@@ -8,6 +8,17 @@
     @csrf
 
     <div class="mb-4">
+      @if(session('error'))
+        <div class="alert alert-danger">
+          {{ session('error') }}
+        </div>
+      @endif
+      @if(session('success'))
+        <div class="alert alert-success">
+          {{ session('success') }}
+        </div>
+      @endif
+
       <h5 class="fw-bold mb-3">🛍️ Order Summary</h5>
       <table class="table table-bordered text-center align-middle">
         <thead class="table-light">

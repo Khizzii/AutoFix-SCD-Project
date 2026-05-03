@@ -8,8 +8,6 @@
   </div>
 
   {{-- 🔍 Search & Filter --}}
-  <div class="row justify-content-center mb-5">
-  {{-- 🔍 Search & Filter --}}
   {{-- 🔍 Search & Filter --}}
   <div class="row justify-content-center mb-5" style="position: relative; z-index: 50;">
       <div class="col-md-8">
@@ -24,7 +22,7 @@
                       <select id="categoryFilter" class="form-control form-select">
                           <option value="">All Categories</option>
                           @foreach($categories as $cat)
-                            <option value="{{ $cat }}">{{ $cat }}</option>
+                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                           @endforeach
                       </select>
                   </div>
@@ -33,7 +31,7 @@
       </div>
   </div>
 
-  <div class="row g-4 justify-content-center" id="productsGrid">
+  <div class="row g-4" id="productsGrid">
     @include('partials.products_grid', ['products' => $products])
   </div>
 </section>
@@ -53,14 +51,18 @@ $(document).ready(function() {
             type: "GET",
             data: { query: query, category: category },
             success: function(response) {
+                console.log("Search response:", response); // DEBUG
                 // 1. Update Dropdown logic
                 let dropdownHtml = '';
                 if(query.length > 0 && response.length > 0) {
                      response.forEach(product => {
-                        let imageUrl = product.image;
-                        if (!imageUrl.startsWith('http')) {
-                            imageUrl = '/images/' + imageUrl;
+                        let imageUrl = product.image ? product.image : 'placeholder.jpg';
+                        if (product.image && !product.image.startsWith('http')) {
+                            imageUrl = '/images/' + product.image;
+                        } else if (!product.image) {
+                             imageUrl = '/images/placeholder.jpg'; 
                         }
+                        
                         dropdownHtml += `
                             <a href="/product/${product.id}" class="list-group-item list-group-item-action d-flex align-items-center gap-3 text-white" style="background: #0F1219; border-color: rgba(255,255,255,0.1);">
                                 <img src="${imageUrl}" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
@@ -76,14 +78,25 @@ $(document).ready(function() {
                     $('#searchDropdown').hide();
                 }
 
-                // 2. Update Grid logic (Keep explicit filtering for better UX)
+                // 2. Update Grid logic
                 let gridHtml = '';
                 if(response.length > 0) {
                     response.forEach(product => {
-                        let imageUrl = product.image;
-                        if (!imageUrl.startsWith('http')) {
-                            imageUrl = '/images/' + imageUrl;
+                        let imageUrl = product.image ? product.image : 'placeholder.jpg';
+                        if (product.image && !product.image.startsWith('http')) {
+                            imageUrl = '/images/' + product.image;
+                        } else if (!product.image) {
+                             imageUrl = '/images/placeholder.jpg'; 
                         }
+                        // Check stock status for badge
+                        let stockBadge = product.stock > 0 
+                            ? `<span class="badge bg-success">In Stock: ${product.stock}</span>`
+                            : `<span class="badge bg-danger">Out of Stock</span>`;
+                        
+                        // Handle Category Object vs String
+                        let catName = (typeof product.category === 'object' && product.category !== null) ? product.category.name : (product.category || 'Uncategorized');
+                        let categoryBadge = `<span class="badge bg-primary me-1">${catName}</span>`;
+
                         gridHtml += `
                         <div class="col-md-4 col-sm-6">
                             <div class="card h-100 product-card border-0">
@@ -95,8 +108,8 @@ $(document).ready(function() {
                                 <div class="card-body text-center p-4">
                                     <h5 class="card-title fw-bold mb-2">${product.name}</h5>
                                     <div class="mb-3">
-                                        <span class="badge bg-primary me-1">${product.category || 'Uncategorized'}</span>
-                                        <span class="badge ${product.stock > 0 ? 'bg-success' : 'bg-danger'}">${product.stock > 0 ? 'In Stock: ' + product.stock : 'Out of Stock'}</span>
+                                        ${categoryBadge}
+                                        ${stockBadge}
                                     </div>
                                     <p class="text-primary fw-bold fs-5 mb-3">Rs ${product.price}</p>
                                     <div class="d-grid gap-2">
@@ -111,6 +124,10 @@ $(document).ready(function() {
                     gridHtml = '<div class="col-12 text-center text-muted"><p>No parts found matching your criteria.</p></div>';
                 }
                 $('#productsGrid').html(gridHtml);
+            },
+            error: function(xhr, status, error) {
+                console.error("Search Error:", error);
+                console.log(xhr.responseText);
             }
         });
     }
@@ -124,6 +141,14 @@ $(document).ready(function() {
             $('#searchDropdown').hide();
         }
     });
+
+    // Check for URL parameters (global search)
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchParam = urlParams.get('search');
+    if (searchParam) {
+        $('#searchInput').val(searchParam);
+        performSearch();
+    }
 });
 
 function addToCart(id, name, price, type) {

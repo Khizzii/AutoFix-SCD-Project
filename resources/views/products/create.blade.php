@@ -67,10 +67,9 @@
                     <!-- Category -->
                     <div class="col-md-12">
                         <label class="form-label fw-bold text-light">Category <span class="text-danger">*</span></label>
-                        <label class="form-label fw-bold text-light">Category <span class="text-danger">*</span></label>
-                    <select name="category" id="categorySelect" class="form-select bg-dark border-secondary text-white" onchange="toggleNewCategory(this)">
+                    <select name="category_id" id="categorySelect" class="form-select bg-dark border-secondary text-white" onchange="toggleNewCategory(this)">
                         @foreach($categories as $cat)
-                            <option value="{{ $cat }}">{{ $cat }}</option>
+                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                         @endforeach
                         <option value="new_category_option" class="fw-bold text-accent">+ Create New Category</option>
                     </select>
